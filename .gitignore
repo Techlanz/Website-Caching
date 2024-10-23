@@ -4,7 +4,7 @@ out/
 
 
 # Ignore Node.js dependencies
-node_modules/
+./node_modules
 
 # Ignore environment files
 .next
