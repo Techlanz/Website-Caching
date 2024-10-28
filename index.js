@@ -36,10 +36,9 @@ const cacheMiddleware = async (req, res, next) => {
 
 
 app.get('/api/webinar/data', cacheMiddleware, async (req, res) => {
-
 });
 
 const PORT = 3001;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
