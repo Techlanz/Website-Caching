@@ -11,7 +11,7 @@ app.use(cors());
 
 
 const fetchDataFromAPI = async () => {
-  const response = await axios.get('https://script.google.com/macros/s/AKfycbyjMf_GNiIUUVLauy4vQrN0GLKdhZ_b0enf3mNxGoj49vaGLKX0DJ47RO14XhGk-7qX/exec');
+  const response = await axios.get('https://script.googleusercontent.com/a/macros/techlanz.com/echo?user_content_key=R08S-abfE_P4lBKGkLqW9tHur6jIyiknYCE8cm716ZidTq4DUO1TE3IomVmbEBH-Tfsu5q9CNnrbimp8yle9vENIxmNnrPs5m5_BxDlH2jW0nuo2oDemN9CCS2h10ox_nRPgeZU6HP9AdwD2XibBk81PedSSoqWwelfDA88TH5rtO8GlEA1VYHi7y5lsuJ4fSlHC1Wk9DtshgR2d8nH29KMeOz7Dv3EfmY4nEHTpvx8GEo7GgEJf7SvDsw_8uExXLTgYGTHWhnE&lib=MgMlderQUy5a6rIvmCM6Y13NiaCb_EVGq');
   return response.data; 
 };
 
