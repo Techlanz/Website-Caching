@@ -42,19 +42,19 @@ const PORT = 3001;
 
 // Load self-signed certificate
 const options = {
-  key: fs.readFileSync("server.key"),
-  cert: fs.readFileSync("server.cert"),
+  key: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/privkey.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/cert.pem"),
 };
 
-// Redirect HTTP requests to HTTPS
-http
-  .createServer((req, res) => {
-    res.writeHead(301, {
-      Location: `https://${req.headers.host}:${PORT}${req.url}`,
-    });
-    res.end();
-  })
-  .listen(80);
+// // Redirect HTTP requests to HTTPS
+// http
+//   .createServer((req, res) => {
+//     res.writeHead(301, {
+//       Location: `https://${req.headers.host}:${PORT}${req.url}`,
+//     });
+//     res.end();
+//   })
+//   .listen(80);
 
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on dev.techlanz.com:${PORT}`);
