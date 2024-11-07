@@ -2,6 +2,7 @@ const express = require("express");
 const NodeCache = require("node-cache");
 const axios = require("axios");
 const cors = require("cors");
+const http = require("http");
 const https = require("https");
 const fs = require("fs");
 
@@ -45,6 +46,16 @@ const options = {
   cert: fs.readFileSync("server.cert"),
 };
 
+// Redirect HTTP requests to HTTPS
+http
+  .createServer((req, res) => {
+    res.writeHead(301, {
+      Location: `https://${req.headers.host}:${PORT}${req.url}`,
+    });
+    res.end();
+  })
+  .listen(80);
+
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+  console.log(`Server running on dev.techlanz.com:${PORT}`);
 });
