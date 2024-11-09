@@ -1,58 +1,75 @@
-const express = require('express');
-const https = require('https');
-const fs = require('fs');
-const NodeCache = require('node-cache');
-const axios = require('axios');
-const cors = require('cors');
+const express = require("express");
+const NodeCache = require("node-cache");
+const axios = require("axios");
+const cors = require("cors");
+const http = require("http");
+const https = require("https");
+const fs = require("fs");
 
 const app = express();
-
-
 const cache = new NodeCache({ stdTTL: 86400, checkperiod: 3600 });
 
 app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
-const options = {
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.cert')
-};
 
-// Function to fetch data from APIv
-const fetchDataFromAPI = async () => {
-  const apiUrl = 'https://script.google.com/macros/s/AKfycbyjMf_GNiIUUVLauy4vQrN0GLKdhZ_b0enf3mNxGoj49vaGLKX0DJ47RO14XhGk-7qX/exec';
-  
-  try {
-    const response = await axios.get(apiUrl);
-    return response.data; 
-  } catch (error) {
-    console.error('Error fetching data from API:', error.message);
-    throw new Error('Failed to fetch data from API');
+const API_PASSWORD = "glf!!R*PhoK_0as20&Ub";
+
+const passwordProtectionMiddleware = (req, res, next) => {
+  const password = req.query.password;
+
+  if (password === API_PASSWORD) {
+    next(); 
+  } else {
+    return res.status(403).json({ error: "Unauthorized: Incorrect password" });
   }
 };
 
-// Middleware for caching
+const fetchDataFromAPI = async () => {
+  const response = await axios.get(
+    "https://script.google.com/macros/s/AKfycbyjMf_GNiIUUVLauy4vQrN0GLKdhZ_b0enf3mNxGoj49vaGLKX0DJ47RO14XhGk-7qX/exec"
+  );
+  return response.data;
+};
+
 const cacheMiddleware = async (req, res, next) => {
   const key = req.originalUrl;
   let cachedData = cache.get(key);
 
   if (!cachedData) {
-    
+    console.log("Cache is empty. Fetching new data...");
     try {
-      cachedData = await fetchDataFromAPI(); 
-      cache.set(key, cachedData);          
+      cachedData = await fetchDataFromAPI();
+      cache.set(key, cachedData);
     } catch (error) {
-      console.error('Error in cache middleware:', error.message);
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: "Failed to fetch data from API" });
     }
   }
 
-  
+  console.log("Serving from cache:", key);
   return res.json(cachedData);
 };
 
-app.get('/api', cacheMiddleware, async (req, res) => {});
 
 
-https.createServer(options, app).listen(3001, () => {
-  console.log('HTTPS Server running on https://localhost:3001');
+app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware, async (req, res) => {});
+
+const PORT = 3001;
+
+
+const options = {
+  key: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/privkey.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/cert.pem"),
+};
+
+// Redirect HTTP requests to HTTPS
+// http.createServer((req, res) => {
+//   res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+//   res.end();
+// }).listen(80);
+
+// HTTPS server setup
+https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
+  console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
 });
