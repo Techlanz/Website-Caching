@@ -29,6 +29,7 @@ const passwordProtectionMiddleware = (req, res, next) => {
 const fetchDataFromAPI = async () => {
   const response = await axios.get(
     "https://script.googleusercontent.com/macros/echo?user_content_key=Ia3NNolpzDpodAZNC78njI2A3XuIqoNtUuMsLxyg_PwxGt4OMEUifXoX0PjW4gDYKqcrkEHetNOU8GcUiFcXaZK68wV2Xrpcm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnHep0rK6S7k5BSWUi5sczp9UkV5Qbw7OJNJHmdEXpWQE_l3vH2pe06Aqrwq9ZkikIuGpsMsXKI-NuIEyKn5uKi0m9-RyHTObhw&lib=MgMlderQUy5a6rIvmCM6Y13NiaCb_EVGq"
+
   );
   return response.data;
 };
@@ -51,6 +52,7 @@ const cacheMiddleware = async (req, res, next) => {
   return res.json(cachedData);
 };
 
+app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
 
 
 app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware, async (req, res) => {});
@@ -72,4 +74,5 @@ const options = {
 // HTTPS server setup
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
   console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
+
 });
