@@ -10,10 +10,26 @@ const app = express();
 const cache = new NodeCache({ stdTTL: 86400, checkperiod: 3600 });
 
 app.use(cors());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
+
+
+const API_PASSWORD = "glf!!R*PhoK_0as20&Ub";
+
+const passwordProtectionMiddleware = (req, res, next) => {
+  const password = req.query.password;
+
+  if (password === API_PASSWORD) {
+    next(); 
+  } else {
+    return res.status(403).json({ error: "Unauthorized: Incorrect password" });
+  }
+};
 
 const fetchDataFromAPI = async () => {
   const response = await axios.get(
-    "https://script.google.com/macros/s/AKfycbyjMf_GNiIUUVLauy4vQrN0GLKdhZ_b0enf3mNxGoj49vaGLKX0DJ47RO14XhGk-7qX/exec"
+    "https://script.googleusercontent.com/macros/echo?user_content_key=Ia3NNolpzDpodAZNC78njI2A3XuIqoNtUuMsLxyg_PwxGt4OMEUifXoX0PjW4gDYKqcrkEHetNOU8GcUiFcXaZK68wV2Xrpcm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnHep0rK6S7k5BSWUi5sczp9UkV5Qbw7OJNJHmdEXpWQE_l3vH2pe06Aqrwq9ZkikIuGpsMsXKI-NuIEyKn5uKi0m9-RyHTObhw&lib=MgMlderQUy5a6rIvmCM6Y13NiaCb_EVGq"
+
   );
   return response.data;
 };
@@ -38,24 +54,25 @@ const cacheMiddleware = async (req, res, next) => {
 
 app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
 
+
+app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware, async (req, res) => {});
+
 const PORT = 3001;
 
-// Load self-signed certificate
+
 const options = {
   key: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/privkey.pem"),
   cert: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/cert.pem"),
 };
 
-// // Redirect HTTP requests to HTTPS
-// http
-//   .createServer((req, res) => {
-//     res.writeHead(301, {
-//       Location: `https://${req.headers.host}:${PORT}${req.url}`,
-//     });
-//     res.end();
-//   })
-//   .listen(80);
+// Redirect HTTP requests to HTTPS
+// http.createServer((req, res) => {
+//   res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+//   res.end();
+// }).listen(80);
 
+// HTTPS server setup
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on dev.techlanz.com:${PORT}`);
+  console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
+
 });
