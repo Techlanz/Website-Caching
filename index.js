@@ -43,10 +43,11 @@ const cacheMiddleware = async (req, res, next) => {
   let cachedData = cache.get(key);
 
   if (cachedData) {
+
   
     return res.json(cachedData);
   } else {
-   
+
     try {
       cachedData = await fetchDataFromAPI();
       cache.set(key, cachedData);
@@ -57,6 +58,7 @@ const cacheMiddleware = async (req, res, next) => {
     }
   }
 };
+
 
 setInterval(async () => {
   try {
@@ -74,8 +76,27 @@ setInterval(async () => {
 }, 900000); 
 
 
-app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware);
-
+app.get(
+  "/api/webinar/data",
+  passwordProtectionMiddleware,
+  cacheMiddleware,
+  async (req, res) => {
+    // Added handler logic
+    try {
+      const key = req.originalUrl;
+      let cachedData = cache.get(key);
+      if (cachedData) {
+        return res.json(cachedData);
+      } else {
+        cachedData = await fetchDataFromAPI();
+        cache.set(key, cachedData);
+        return res.json(cachedData);
+      }
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to fetch data from API" });
+    }
+  }
+);
 
 const PORT = 3001;
 
