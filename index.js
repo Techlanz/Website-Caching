@@ -41,14 +41,13 @@ const cacheMiddleware = async (req, res, next) => {
   let cachedData = cache.get(key);
 
   if (cachedData) {
-    console.log("Serving from cache:", key);
+ 
     return res.json(cachedData);
   } else {
-    console.log("Cache is empty. Fetching new data...");
+  
     try {
       cachedData = await fetchDataFromAPI();
       cache.set(key, cachedData);
-      console.log("Data cached:", key);
       return res.json(cachedData);
     } catch (error) {
       return res.status(500).json({ error: "Failed to fetch data from API" });
@@ -59,11 +58,11 @@ const cacheMiddleware = async (req, res, next) => {
 app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
 
 setInterval(() => {
-  console.log("Auto-refreshing cache...");
+
   fetchDataFromAPI()
     .then((data) => {
       cache.set("/api/webinar/data", data);
-      console.log("Cache updated.");
+    
     })
     .catch((error) => {
       console.error("Failed to refresh cache:", error.message);
@@ -84,3 +83,4 @@ const options = {
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
   console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
 });
+
