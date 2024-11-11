@@ -52,9 +52,6 @@ const cacheMiddleware = async (req, res, next) => {
   return res.json(cachedData);
 };
 
-app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
-
-
 app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware, async (req, res) => {});
 
 const PORT = 3001;
