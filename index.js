@@ -41,10 +41,8 @@ const cacheMiddleware = async (req, res, next) => {
   let cachedData = cache.get(key);
 
   if (cachedData) {
- 
     return res.json(cachedData);
   } else {
-  
     try {
       cachedData = await fetchDataFromAPI();
       cache.set(key, cachedData);
@@ -55,33 +53,45 @@ const cacheMiddleware = async (req, res, next) => {
   }
 };
 
-app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
-
 setInterval(() => {
-
   fetchDataFromAPI()
     .then((data) => {
       cache.set("/api/webinar/data", data);
-    
     })
     .catch((error) => {
       console.error("Failed to refresh cache:", error.message);
     });
 }, 300000);
 
-app.get("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware);
-
+app.get(
+  "/api/webinar/data",
+  passwordProtectionMiddleware,
+  cacheMiddleware,
+  async (req, res) => {
+    // Added handler logic
+    try {
+      const key = req.originalUrl;
+      let cachedData = cache.get(key);
+      if (cachedData) {
+        return res.json(cachedData);
+      } else {
+        cachedData = await fetchDataFromAPI();
+        cache.set(key, cachedData);
+        return res.json(cachedData);
+      }
+    } catch (error) {
+      return res.status(500).json({ error: "Failed to fetch data from API" });
+    }
+  }
+);
 
 const PORT = 3001;
-
 
 const options = {
   key: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/privkey.pem"),
   cert: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/cert.pem"),
 };
 
-
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
   console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
 });
-
