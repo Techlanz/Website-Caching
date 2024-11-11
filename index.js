@@ -56,6 +56,7 @@ const cacheMiddleware = async (req, res, next) => {
   }
 };
 
+app.get("/api/webinar/data", cacheMiddleware, async (req, res) => {});
 
 setInterval(() => {
   console.log("Auto-refreshing cache...");
