@@ -80,5 +80,5 @@ const options = {
 };
 
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
+  console.log(`Secure server running on https://techlanz.com:${PORT}`);
 });
