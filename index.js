@@ -4,6 +4,7 @@ const axios = require("axios");
 const cors = require("cors");
 const https = require("https");
 const fs = require("fs");
+const tls = require("tls");
 
 const app = express();
 const cache = new NodeCache({ stdTTL: 0, checkperiod: 3600 });
@@ -12,11 +13,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const API_PASSWORD = "glf!!R*PhoK_0as20&Ub"; 
-
+const API_PASSWORD = "glf!!R*PhoK_0as20&Ub";
 
 const passwordProtectionMiddleware = (req, res, next) => {
-  const password = req.body.password; 
+  const password = req.body.password;
 
   if (password === API_PASSWORD) {
     next();
@@ -24,7 +24,6 @@ const passwordProtectionMiddleware = (req, res, next) => {
     return res.status(403).json({ error: "Unauthorized: Incorrect password" });
   }
 };
-
 
 const fetchDataFromAPI = async () => {
   try {
@@ -37,7 +36,6 @@ const fetchDataFromAPI = async () => {
     throw error;
   }
 };
-
 
 const cacheMiddleware = async (req, res, next) => {
   const key = "/api/webinar/data";
@@ -70,15 +68,46 @@ setInterval(async () => {
   }
 }, 900000);
 
-
 app.post("/api/webinar/data", passwordProtectionMiddleware, cacheMiddleware);
 
 const PORT = 3001;
 const options = {
-  key: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/privkey.pem"),
-  cert: fs.readFileSync("/etc/letsencrypt/live/dev.techlanz.com/cert.pem"),
+  key: fs.readFileSync("/etc/letsencrypt/live/techlanz.com/privkey.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/techlanz.com/cert.pem"),
+  SNICallback: (domain, cb) => {
+    let cert;
+    switch (domain) {
+      case "www.techlanz.com":
+        cert = {
+          key: fs.readFileSync(
+            "/etc/letsencrypt/live/www.techlanz.com/privkey.pem"
+          ),
+          cert: fs.readFileSync(
+            "/etc/letsencrypt/live/www.techlanz.com/cert.pem"
+          ),
+        };
+        break;
+      case "ved.techlanz.com":
+        cert = {
+          key: fs.readFileSync(
+            "/etc/letsencrypt/live/ved.techlanz.com/privkey.pem"
+          ),
+          cert: fs.readFileSync(
+            "/etc/letsencrypt/live/ved.techlanz.com/cert.pem"
+          ),
+        };
+        break;
+      default:
+        cert = {
+          key: fs.readFileSync(
+            "/etc/letsencrypt/live/techlanz.com/privkey.pem"
+          ),
+          cert: fs.readFileSync("/etc/letsencrypt/live/techlanz.com/cert.pem"),
+        };
+    }
+    cb(null, tls.createSecureContext(cert));
+  },
 };
-
 https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
-  console.log(`Secure server running on https://dev.techlanz.com:${PORT}`);
+  console.log(`Secure server running on https://techlanz.com:${PORT}`);
 });
